@@ -3,9 +3,13 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { pool } = require('.'); // hoặc './index'
+
+// IMPORT POOL TỪ INDEX.JS (ĐÚNG CÁCH)
+const { pool } = require('.');
+
 const JWT_SECRET = process.env.JWT_SECRET || 'techstore_secret_vn_2025';
 
+// === ĐĂNG KÝ ===
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
@@ -29,11 +33,12 @@ router.post('/register', async (req, res) => {
       user: result.rows[0]
     });
   } catch (err) {
-    console.error('Lỗi đăng ký:', err);
+    console.error('Lỗi đăng ký:', err.message);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
 
+// === ĐĂNG NHẬP ===
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -59,7 +64,7 @@ router.post('/login', async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email }
     });
   } catch (err) {
-    console.error('Lỗi đăng nhập:', err);
+    console.error('Lỗi đăng nhập:', err.message);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });

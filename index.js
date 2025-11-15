@@ -10,7 +10,7 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Middleware
+// === MIDDLEWARE ===
 app.use(cors());
 app.use(express.json());
 
@@ -18,7 +18,7 @@ app.use(express.json());
 const authRoutes = require('./auth');
 app.use('/api/auth', authRoutes);
 
-// === KHỞI TẠO DATABASE (PRODUCTS + USERS) ===
+// === KHỞI TẠO DATABASE (AN TOÀN) ===
 const initializeDB = async () => {
   try {
     console.log('Đang khởi tạo database (an toàn, không xóa)...');
@@ -40,7 +40,7 @@ const initializeDB = async () => {
       await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS category VARCHAR(50);`);
     } catch (err) {}
 
-    // 2. TẠO BẢNG USERS (QUAN TRỌNG!)
+    // 2. TẠO BẢNG USERS
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -80,7 +80,8 @@ const initializeDB = async () => {
   }
 };
 
-initializeDB();
+// GỌI KHỞI TẠO
+initializeDB().catch(console.error);
 
 // === API ROUTES ===
 app.get('/api/products', async (req, res) => {
@@ -117,10 +118,11 @@ app.get('/', (req, res) => {
   res.send('<h1>Tech Store API OK!</h1><p>POST /api/auth/register</p>');
 });
 
+// === SERVER START ===
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server chạy tại: http://localhost:${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`Server chạy tại: https://tech-store-backend-a48m.onrender.com`);
 });
 
-// EXPORT POOL CHO AUTH
-module.exports = { app, pool };
+// === EXPORT CHO AUTH (QUAN TRỌNG!) ===
+module.exports = { app, pool, server };
