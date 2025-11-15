@@ -1,4 +1,4 @@
-// auth.js - ĐĂNG KÝ & ĐĂNG NHẬP (JWT + bcrypt)
+// tech-store-backend/auth.js
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
@@ -7,7 +7,6 @@ const { pool } = require('./index');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'techstore_secret_vn_2025';
 
-// ĐĂNG KÝ
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
@@ -31,11 +30,11 @@ router.post('/register', async (req, res) => {
       user: result.rows[0]
     });
   } catch (err) {
+    console.error('Lỗi đăng ký:', err);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
 
-// ĐĂNG NHẬP
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -61,6 +60,7 @@ router.post('/login', async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email }
     });
   } catch (err) {
+    console.error('Lỗi đăng nhập:', err);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
