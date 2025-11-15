@@ -3,8 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { pool } = require('./index');
-
+const { pool } = require('.'); // hoặc './index'
 const JWT_SECRET = process.env.JWT_SECRET || 'techstore_secret_vn_2025';
 
 router.post('/register', async (req, res) => {
