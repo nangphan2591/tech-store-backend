@@ -1,4 +1,4 @@
-// index.js - FIX: LUÔN XÓA CŨ + CẬP NHẬT MỚI (GIÁ VND + ẢNH MỚI)
+// index.js - THÊM CATEGORY + GIÁ VND + ẢNH MỚI
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -14,69 +14,75 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// TỰ ĐỘNG CẬP NHẬT: XÓA CŨ + THÊM MỚI MỖI LẦN KHỞI ĐỘNG
+// TỰ ĐỘNG CẬP NHẬT: XÓA CŨ + THÊM MỚI + CATEGORY
 const initializeDB = async () => {
   try {
-    console.log('Đang xóa dữ liệu cũ và cập nhật mới...');
+    console.log('Đang xóa dữ liệu cũ và cập nhật mới (có category)...');
 
-    // Tạo bảng nếu chưa có
+    // TẠO BẢNG MỚI VỚI CỘT category
     await pool.query(`
       CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         image TEXT NOT NULL,
         price DECIMAL(12,0) NOT NULL,
-        description TEXT
+        description TEXT,
+        category VARCHAR(50) NOT NULL
       );
     `);
 
-    // XÓA TOÀN BỘ DỮ LIỆU CŨ (để luôn cập nhật)
+    // XÓA DỮ LIỆU CŨ
     await pool.query('DELETE FROM products;');
     console.log('Đã xóa dữ liệu cũ.');
 
-    // Danh sách sản phẩm MỚI (ảnh cập nhật, giá VND)
+    // DỮ LIỆU MỚI + CATEGORY
     const newProducts = [
       {
-        name: 'iPhone 16 Pro Max',
-        image: 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-7inch-deserttitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1726434272365',
+        name: 'iPhone 17 Pro Max',
+        image: 'https://cdn1.viettelstore.vn/Images/Product/ProductImage/444965480.jpeg',
         price: 35000000,
-        description: 'Chip A18 Pro, camera 48MP, pin 5000mAh'
+        description: 'Chip A19 Pro, Camera 18MP Center Stage, Khẩu độ ƒ(1.9), pin 5000mAh',
+        category: 'Smartphone'
       },
       {
         name: 'MacBook Air M3 16GB',
-        image: 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mba15-midnight-select-202402?wid=904&hei=840&fmt=jpeg&qlt=90&.v=1707417709140',
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/44/335362/macbook-air-13-inch-m4-16gb-256gb-tgdd-1-638768909105991664-750x500.jpg',
         price: 38000000,
-        description: 'RAM 16GB, pin 18h, màn hình Liquid Retina'
+        description: 'RAM 16GB, pin 18h, màn hình Liquid Retina',
+        category: 'Laptop'
       },
       {
         name: 'Samsung Galaxy S25 Ultra',
-        image: 'https://images.samsung.com/is/image/samsung/p6pim/vn/2501/gallery/vn-galaxy-s25-ultra-sm-s938bzkhvna-539573639?$650_519_PNG$',
+        image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/333352/galaxy-s25-ultra-xanh-duong-1-638748063061861712-750x500.jpg',
         price: 32000000,
-        description: 'Camera 200MP, S Pen, màn hình 6.9"'
+        description: 'Camera 200MP, S Pen, màn hình 6.9"',
+        category: 'Smartphone'
       },
       {
         name: 'Sony WH-1000XM6',
-        image: 'https://electronics.sony.com/image/5d3e3c5d7f7a7f1b1a1b1a1b1a1b1a1b?fmt=png-alpha&wid=660',
+        image: 'https://sony.scene7.com/is/image/sonyglobalsolutions/WH1000XM6_Primary_image_Black?$S7Product$&fmt=png-alpha',
         price: 11000000,
-        description: 'Chống ồn AI, pin 40h, kết nối đa thiết bị'
+        description: 'Chống ồn AI, pin 40h, kết nối đa thiết bị',
+        category: 'Headphones'
       },
       {
         name: 'Dell XPS 14 2025',
-        image: 'https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/xps-14-9440/media-gallery/xps-14-9440-platinum-gallery-1.psd?fmt=png-alpha&wid=600',
+        image: 'https://newtechshop.vn/wp-content/uploads/2025/10/notebook-xps-14-9440t-gy-gallery-9.webp',
         price: 48000000,
-        description: 'OLED 3.2K, Intel Core Ultra 7, pin 15h'
+        description: 'OLED 3.2K, Intel Core Ultra 7, pin 15h',
+        category: 'Laptop'
       }
     ];
 
-    // THÊM SẢN PHẨM MỚI
+    // THÊM SẢN PHẨM VỚI category
     for (const p of newProducts) {
       await pool.query(`
-        INSERT INTO products (name, image, price, description)
-        VALUES ($1, $2, $3, $4)
-      `, [p.name, p.image, p.price, p.description]);
+        INSERT INTO products (name, image, price, description, category)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [p.name, p.image, p.price, p.description, p.category]);
     }
 
-    console.log('Đã cập nhật thành công 5 sản phẩm mới (VND + ảnh mới)!');
+    console.log('Đã cập nhật 5 sản phẩm với category (Smartphone, Laptop, Headphones)!');
   } catch (err) {
     console.error('Lỗi cập nhật DB:', err.message);
   }
@@ -85,7 +91,7 @@ const initializeDB = async () => {
 // GỌI NGAY KHI KHỞI ĐỘNG
 initializeDB();
 
-// API ROUTES (GIỮ NGUYÊN)
+// API: LẤY TẤT CẢ SẢN PHẨM (CÓ category)
 app.get('/api/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products ORDER BY id');
@@ -95,6 +101,7 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
+// API: LẤY THEO ID
 app.get('/api/products/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -108,8 +115,27 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
+// API: LỌC THEO DANH MỤC (TÙY CHỌN)
+app.get('/api/products/category/:category', async (req, res) => {
+  const { category } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM products WHERE category = $1', [category]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
 app.get('/', (req, res) => {
-  res.send('<h1>Tech Store API (VND + Ảnh Mới) đang chạy!</h1><p>Truy cập: <a href="/api/products">/api/products</a></p>');
+  res.send(`
+    <h1>Tech Store API (VND + Category)</h1>
+    <p>Truy cập: <a href="/api/products">/api/products</a></p>
+    <p>Lọc: 
+      <a href="/api/products/category/Smartphone">Smartphone</a> | 
+      <a href="/api/products/category/Laptop">Laptop</a> | 
+      <a href="/api/products/category/Headphones">Headphones</a>
+    </p>
+  `);
 });
 
 const PORT = process.env.PORT || 5000;
