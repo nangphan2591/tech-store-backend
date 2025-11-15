@@ -1,14 +1,10 @@
 // tech-store-backend/index.js
 const express = require('express');
 const cors = require('cors');
-const { Pool } = require('pg');
+const { pool } = require('./db'); // DÙNG FILE DB RIÊNG
 require('dotenv').config();
 
 const app = express();
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
 
 // === MIDDLEWARE ===
 app.use(cors());
@@ -89,6 +85,7 @@ app.get('/api/products', async (req, res) => {
     const result = await pool.query('SELECT * FROM products ORDER BY id');
     res.json(result.rows);
   } catch (err) {
+    console.error('Lỗi GET products:', err.message);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
@@ -100,6 +97,7 @@ app.get('/api/products/:id', async (req, res) => {
     if (result.rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy' });
     res.json(result.rows[0]);
   } catch (err) {
+    console.error('Lỗi GET product:', err.message);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
@@ -110,6 +108,7 @@ app.get('/api/products/category/:category', async (req, res) => {
     const result = await pool.query('SELECT * FROM products WHERE category = $1', [category]);
     res.json(result.rows);
   } catch (err) {
+    console.error('Lỗi GET category:', err.message);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
@@ -120,9 +119,6 @@ app.get('/', (req, res) => {
 
 // === SERVER START ===
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server chạy tại: https://tech-store-backend-a48m.onrender.com`);
 });
-
-// === EXPORT CHO AUTH (QUAN TRỌNG!) ===
-module.exports = { app, pool, server };
