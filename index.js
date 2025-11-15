@@ -1,4 +1,4 @@
-// index.js - KHÔNG XÓA DỮ LIỆU, CHỈ CẬP NHẬT (UPSERT) + THÊM CATEGORY
+// index.js - TECH STORE BACKEND 2025 (UPSERT + AUTH + CATEGORY)
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -14,12 +14,16 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// TỰ ĐỘNG CẬP NHẬT: KHÔNG XÓA, CHỈ UPSERT + THÊM CỘT category
+// === KẾT NỐI AUTH ROUTES ===
+const authRoutes = require('./auth');
+app.use('/api/auth', authRoutes); // /api/auth/register, /api/auth/login
+
+// === KHỞI TẠO DATABASE (PRODUCTS + USERS) ===
 const initializeDB = async () => {
   try {
-    console.log('Đang kiểm tra và cập nhật database (an toàn, không xóa)...');
+    console.log('Đang khởi tạo database (an toàn, không xóa)...');
 
-    // TẠO BẢNG + THÊM CỘT category NẾU CHƯA CÓ
+    // 1. TẠO BẢNG PRODUCTS (có category)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
@@ -31,24 +35,34 @@ const initializeDB = async () => {
       );
     `);
 
-    // Thêm cột category nếu chưa tồn tại
+    // Thêm cột category nếu chưa có
     try {
-      await pool.query(`
-        ALTER TABLE products ADD COLUMN IF NOT EXISTS category VARCHAR(50);
-      `);
-      console.log('Đã thêm cột category (nếu chưa có).');
+      await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS category VARCHAR(50);`);
+      console.log('Đã thêm cột category (nếu cần).');
     } catch (err) {
       console.log('Cột category đã tồn tại.');
     }
 
-    // DỮ LIỆU MỚI MUỐN CẬP NHẬT (bạn có thể sửa thoải mái)
+    // 2. TẠO BẢNG USERS (cho đăng nhập)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('Bảng users đã sẵn sàng.');
+
+    // 3. DỮ LIỆU SẢN PHẨM MẪU (UPSERT theo ID)
     const targetProducts = [
       {
         id: 6,
         name: 'iPhone 17 Pro Max',
         image: 'https://cdn1.viettelstore.vn/Images/Product/ProductImage/444965480.jpeg',
         price: 35000000,
-        description: 'Chip A19 Pro, Camera 18MP Center Stage, Khẩu độ ƒ(1.9), pin 5000mAh',
+        description: 'Chip A19 Pro, Camera 18MP Center Stage, pin 5000mAh',
         category: 'Smartphone'
       },
       {
@@ -85,7 +99,7 @@ const initializeDB = async () => {
       }
     ];
 
-    // UPSERT: CẬP NHẬT HOẶC THÊM MỚI THEO ID
+    // UPSERT: CẬP NHẬT HOẶC THÊM MỚI
     for (const p of targetProducts) {
       await pool.query(`
         INSERT INTO products (id, name, image, price, description, category)
@@ -99,13 +113,13 @@ const initializeDB = async () => {
       `, [p.id, p.name, p.image, p.price, p.description, p.category]);
     }
 
-    console.log('Đã cập nhật 5 sản phẩm (an toàn, không xóa)!');
+    console.log('Đã cập nhật 5 sản phẩm + bảng users (an toàn)!');
   } catch (err) {
-    console.error('Lỗi cập nhật DB:', err.message);
+    console.error('Lỗi khởi tạo DB:', err.message);
   }
 };
 
-// GỌI NGAY KHI KHỞI ĐỘNG
+// GỌI KHI KHỞI ĐỘNG
 initializeDB();
 
 // === API ROUTES ===
@@ -129,7 +143,6 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
-// LỌC THEO DANH MỤC
 app.get('/api/products/category/:category', async (req, res) => {
   const { category } = req.params;
   try {
@@ -140,19 +153,25 @@ app.get('/api/products/category/:category', async (req, res) => {
   }
 });
 
+// TRANG CHỦ
 app.get('/', (req, res) => {
   res.send(`
-    <h1>Tech Store API (AN TOÀN - KHÔNG XÓA DỮ LIỆU)</h1>
+    <h1>Tech Store API 2025 (Việt Nam)</h1>
     <p><a href="/api/products">Tất cả sản phẩm</a></p>
     <p>Lọc: 
       <a href="/api/products/category/Smartphone">Smartphone</a> | 
       <a href="/api/products/category/Laptop">Laptop</a> | 
       <a href="/api/products/category/Headphones">Headphones</a>
     </p>
+    <hr>
+    <h3>Auth API</h3>
+    <p>POST <a href="https://your-app.onrender.com/api/auth/register">/api/auth/register</a></p>
+    <p>POST <a href="https://your-app.onrender.com/api/auth/login">/api/auth/login</a></p>
   `);
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server chạy tại: http://localhost:${PORT}`);
+  console.log(`API: https://tech-store-backend-a48m.onrender.com/api/products`);
 });
