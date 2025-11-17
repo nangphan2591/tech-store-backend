@@ -50,7 +50,7 @@ const initializeDB = async () => {
 
     // 3. DỮ LIỆU SẢN PHẨM MẪU (UPSERT)
     const targetProducts = [
-      { id: 6, name: 'iPhone 17 Pro Max', image: 'https://cdn1.viettelstore.vn/Images/Product/ProductImage/444965480.jpeg', price: 35000000, description: 'Chip A19 Pro', category: 'Smartphone' },
+      { id: 6, name: 'iPhone 17 Pro Max', image: 'https://cdn1.viettelstore.vn/Images/Product/ProductImage/444965480.jpeg', price: 3500000, description: 'Chip A19 Pro', category: 'Smartphone' },
       { id: 7, name: 'MacBook Air M3 16GB', image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/44/335362/macbook-air-13-inch-m4-16gb-256gb-tgdd-1-638768909105991664-750x500.jpg', price: 38000000, description: 'RAM 16GB', category: 'Laptop' },
       { id: 8, name: 'Samsung Galaxy S25 Ultra', image: 'https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/333352/galaxy-s25-ultra-xanh-duong-1-638748063061861712-750x500.jpg', price: 32000000, description: 'Camera 200MP', category: 'Smartphone' },
       { id: 9, name: 'Sony WH-1000XM6', image: 'https://sony.scene7.com/is/image/sonyglobalsolutions/WH1000XM6_Primary_image_Black?$S7Product$&fmt=png-alpha', price: 11000000, description: 'Chống ồn AI', category: 'Headphones' },
